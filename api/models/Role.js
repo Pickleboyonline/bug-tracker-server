@@ -24,7 +24,7 @@ module.exports = {
     permissions: {
       type: 'string',
       defaultsTo: 'ALL',
-      isIn: PERMISSIONS
+      // isIn: PERMISSIONS
     },
     //  ╔═╗╦═╗╦╔╦╗╦╔╦╗╦╦  ╦╔═╗╔═╗
     //  ╠═╝╠╦╝║║║║║ ║ ║╚╗╔╝║╣ ╚═╗

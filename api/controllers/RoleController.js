@@ -69,8 +69,48 @@ module.exports = {
             message: 'Role was created',
             role
         })
+    },
 
+    // get all roles for a specific project
+    // /role/all/:projectId
+    all: async (req, res) => {
+        var user;
+        try {
+            user = await sails.helpers.authentication(req);
+        } catch (e) {
+            sails.log(e)
+            return res.forbidden()
+        }
 
+        const { projectId } = req.params;
+
+        let roles = await Role.find({ project: projectId });
+
+        return res.json({
+            roles
+        })
+    },
+
+    // Get members of a specific role
+    // /role/:roleId
+    get: async (req, res) => {
+        var user;
+        try {
+            user = await sails.helpers.authentication(req);
+        } catch (e) {
+            sails.log(e)
+            return res.forbidden()
+        }
+
+        const { roleId } = req.params;
+
+        let role = await Role.findOne({ id: roleId }).populate('users', { select: ['name', 'email'] });
+
+        if (!role) return res.badRequest("Role does not exist");
+
+        return res.json({
+            role
+        })
     }
 
 };
