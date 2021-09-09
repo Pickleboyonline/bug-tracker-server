@@ -220,11 +220,13 @@ module.exports = {
             if (sortBy === 'title') sort = 'title';
             if (sortBy === 'last-modified') sort = 'updatedAt';
 
-            if (order && order === 'ASC') sort += ' ASC';
-            if (order && order === 'DESC') sort += ' DESC';
+            if (order === 'ASC') sort += ' ASC';
+            if (order === 'DESC') sort += ' DESC';
 
             criteria.sort = sort;
             // sails.log(criteria.sort)
+        } else {
+            criteria.sort = 'updatedAt DESC'
         }
 
         if (!projectId) {

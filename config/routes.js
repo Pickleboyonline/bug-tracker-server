@@ -63,4 +63,9 @@ module.exports.routes = {
 
   'POST /announcement': 'AnnouncementController.create',
   'GET /announcement': 'AnnouncementController.get',
+
+  'POST /role': 'RoleController.create',
+  'PUT /role': 'RoleController.update',
+  'GET /role/all/:projectId': 'RoleController.all',
+  'GET /role/:roleId': 'RoleController.find',
 };

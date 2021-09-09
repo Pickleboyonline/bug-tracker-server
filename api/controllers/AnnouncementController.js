@@ -66,7 +66,8 @@ module.exports = {
 
         // criteria = { ...criteria, sortBy, limit: 5, skip };
         if (limit) criteria.limit = limit;
-        if (sortBy) criteria.sortBy = sortBy;
+        if (sortBy) criteria.sort = sortBy;
+        criteria.sort = 'updatedAt DESC'
         if (skip) criteria.skip = skip;
 
         // sails.log(criteria)
