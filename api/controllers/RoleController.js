@@ -32,7 +32,9 @@ module.exports = {
             return res.forbidden()
         }
 
-        const { projectId, title, permissions, users } = req.body;
+        let { projectId, title, permissions, users, color } = req.body;
+
+        if (color === '') color = undefined;
 
         // Validate permissions
         let permissionsArray = permissions.split(',');
@@ -59,7 +61,7 @@ module.exports = {
         if (existingRole) return res.badRequest("Role already exists for this project");
 
         // create role
-        let role = await Role.create({ project: projectId, title, permissions }).fetch()
+        let role = await Role.create({ project: projectId, title, permissions, color }).fetch()
 
         // add initial users if given
         let userIds;
@@ -119,6 +121,27 @@ module.exports = {
         })
     },
 
+    delete: async (req, res) => {
+        var user;
+        try {
+            user = await sails.helpers.authentication(req);
+        } catch (e) {
+            sails.log(e)
+            return res.forbidden()
+        }
+
+        const { roleId } = req.params;
+
+
+        let role = await Role.destroyOne({ id: roleId })
+
+        if (!role) return res.notFound("Role does not exist")
+
+        return res.json({
+            message: 'Role was removed',
+            role
+        })
+    },
     update: async (req, res) => {
         var user;
         try {
@@ -128,7 +151,7 @@ module.exports = {
             return res.forbidden()
         }
 
-        const { roleId, title, permissions, users } = req.body;
+        let { roleId, title, permissions, users, color } = req.body;
 
         // Validate permissions
         let permissionsArray = permissions.split(',');
@@ -152,10 +175,12 @@ module.exports = {
         // ensure role exists
         let existingRole = await Role.findOne({ id: roleId }).populate('users');
         if (!existingRole) return res.badRequest("Role does not exist for this project");
-
+        if (color === '') {
+            color = undefined
+        }
         //update permissions and title
         await Role.updateOne({ id: existingRole.id }).set({
-            permissions, title
+            permissions, title, color
         })
 
         // remove existing roles 

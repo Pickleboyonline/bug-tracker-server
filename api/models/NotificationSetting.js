@@ -1,5 +1,5 @@
 /**
- * Project.js
+ * NotificationSetting.js
  *
  * @description :: A model definition represents a database table/collection.
  * @docs        :: https://sailsjs.com/docs/concepts/models-and-orm/models
@@ -8,17 +8,15 @@
 module.exports = {
 
   attributes: {
+    recieveNotifications: {
+      type: 'boolean',
+      defaultsTo: true
+    },
 
     //  ╔═╗╦═╗╦╔╦╗╦╔╦╗╦╦  ╦╔═╗╔═╗
     //  ╠═╝╠╦╝║║║║║ ║ ║╚╗╔╝║╣ ╚═╗
     //  ╩  ╩╚═╩╩ ╩╩ ╩ ╩ ╚╝ ╚═╝╚═╝
-    title: {
-      type: 'string',
-      required: true
-    },
-    description: {
-      type: 'string',
-    },
+
 
     //  ╔═╗╔╦╗╔╗ ╔═╗╔╦╗╔═╗
     //  ║╣ ║║║╠╩╗║╣  ║║╚═╗
@@ -28,32 +26,11 @@ module.exports = {
     //  ╔═╗╔═╗╔═╗╔═╗╔═╗╦╔═╗╔╦╗╦╔═╗╔╗╔╔═╗
     //  ╠═╣╚═╗╚═╗║ ║║  ║╠═╣ ║ ║║ ║║║║╚═╗
     //  ╩ ╩╚═╝╚═╝╚═╝╚═╝╩╩ ╩ ╩ ╩╚═╝╝╚╝╚═╝
-    owner: {
+    project: {
+      model: 'project'
+    },
+    user: {
       model: 'user'
-    },
-    members: {
-      collection: 'user',
-      via: 'projectsJoined'
-    },
-    announcements: {
-      collection: 'announcement',
-      via: 'project'
-    },
-    icon: {
-      collection: 'uploadedimage',
-      via: 'project'
-    },
-    bugs: {
-      collection: 'bug',
-      via: 'project'
-    },
-    roles: {
-      collection: 'role',
-      via: 'project'
-    },
-    notificationSettings: {
-      collection: 'notificationsetting',
-      via: 'project'
     }
   },
 

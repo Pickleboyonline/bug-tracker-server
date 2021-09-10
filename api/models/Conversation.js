@@ -1,5 +1,5 @@
 /**
- * Message.js
+ * Conversation.js
  *
  * @description :: A model definition represents a database table/collection.
  * @docs        :: https://sailsjs.com/docs/concepts/models-and-orm/models
@@ -8,8 +8,9 @@
 module.exports = {
 
   attributes: {
-    body: {
-      type: 'string'
+    participants: {
+      type: 'string',
+      required: true
     },
     //  ╔═╗╦═╗╦╔╦╗╦╔╦╗╦╦  ╦╔═╗╔═╗
     //  ╠═╝╠╦╝║║║║║ ║ ║╚╗╔╝║╣ ╚═╗
@@ -24,14 +25,9 @@ module.exports = {
     //  ╔═╗╔═╗╔═╗╔═╗╔═╗╦╔═╗╔╦╗╦╔═╗╔╗╔╔═╗
     //  ╠═╣╚═╗╚═╗║ ║║  ║╠═╣ ║ ║║ ║║║║╚═╗
     //  ╩ ╩╚═╝╚═╝╚═╝╚═╝╩╩ ╩ ╩ ╩╚═╝╝╚╝╚═╝
-    conversation: {
-      model: 'conversation',
-    },
-    sender: {
-      model: 'user'
-    },
-    reciever: {
-      model: 'user'
+    messages: {
+      collection: 'messsage',
+      via: 'conversation'
     }
   },
 

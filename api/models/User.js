@@ -77,6 +77,22 @@ module.exports = {
     roles: {
       collection: 'role',
       via: 'users'
+    },
+    notificationSettings: {
+      collection: 'notificationsetting',
+      via: 'user'
+    },
+    sentMessages: {
+      collection: 'message',
+      via: 'sender'
+    },
+    recievedMessages: {
+      collection: 'message',
+      via: 'reciever'
+    },
+    notifications: {
+      collection: 'notification',
+      via: 'reciepent'
     }
   },
   schema: true

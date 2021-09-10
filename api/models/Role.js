@@ -21,6 +21,10 @@ module.exports = {
       type: 'string',
       required: true
     },
+    color: {
+      type: 'string',
+      defaultsTo: '#f44336'
+    },
     permissions: {
       type: 'string',
       defaultsTo: 'ALL',

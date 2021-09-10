@@ -41,7 +41,11 @@ module.exports.routes = {
   'POST /project/create': 'ProjectController.create',
   'GET /project/find': 'ProjectController.find',
   'GET /project/all': 'ProjectController.all',
+  'GET /project/users/:projectId': 'ProjectController.users',
   'PUT /project/:projectId': 'ProjectController.update',
+  'DELETE /project/member': 'ProjectController.removeUser',
+  'POST /project/member': 'ProjectController.inviteUser',
+  'GET /project/stats/:projectId': 'ProjectController.getStats',
 
   'POST /bug/create': 'BugController.create',
   'GET /bug/all': 'BugController.all',
@@ -68,4 +72,15 @@ module.exports.routes = {
   'PUT /role': 'RoleController.update',
   'GET /role/all/:projectId': 'RoleController.all',
   'GET /role/:roleId': 'RoleController.find',
+  'DELETE /role/:roleId': 'RoleController.delete',
+
+  'GET /notification-setting/:projectId': 'NotificationSettingController.get',
+  'PUT /notification-setting/:projectId': 'NotificationSettingController.update',
+
+  'POST /invite': { action: 'invite' },
+
+  'POST /message/:userId': 'MessageController.sendMessage',
+  'GET /conversation/all': 'MessageController.getConversation',
+  'GET /conversation/:conversationId': 'MessageController.getMessages',
+  // 'DELETE /conversation/:conversationId': 'MessageController.sendMessage',
 };

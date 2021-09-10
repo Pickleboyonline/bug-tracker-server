@@ -5,6 +5,8 @@
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
 
+const Project = require("../models/Project");
+
 
 module.exports = {
     join: async (req, res) => {
@@ -154,6 +156,161 @@ module.exports = {
 
 
         return res.json({ projects })
+    },
+
+    // DELETE /project/member
+    // remove user from project
+    removeUser: async (req, res) => {
+        var user;
+        try {
+            user = await sails.helpers.authentication(req);
+        } catch (e) {
+            sails.log(e)
+            return res.forbidden()
+        }
+
+        // TODO: add permission helper
+        const { userId, projectId } = req.body;
+
+        await Project.removeFromCollection(projectId, 'members', userId);
+
+        return res.json({
+            success: true
+        })
+    },
+
+    // POST /project/member
+    inviteUser: async (req, res) => {
+        var user;
+        try {
+            user = await sails.helpers.authentication(req);
+        } catch (e) {
+            sails.log(e)
+            return res.forbidden()
+        }
+        const { userEmails, projectId } = req.body;
+        // TODO: check permissions
+        if (!(userEmails && projectId)) return res.badRequest('Must provide userEmails and projectId');
+
+        let userEmailsArray = userEmails.split(',');
+        let usersInApp = [];
+        let usersNotInApp = [];
+
+        for (let i = 0; i < userEmailsArray.length; i++) {
+            if (userEmailsArray[i] === '') continue;
+
+            let user = await User.findOne({
+                email: userEmailsArray[i]
+            });
+
+            if (user) {
+                await Project.addToCollection(projectId, 'members', user.id);
+            } else {
+                // TODO: send email for invite
+            }
+        }
+    },
+
+    // GET /project/stats/:projectId
+    getStats: async (req, res) => {
+        var user;
+        try {
+            user = await sails.helpers.authentication(req);
+        } catch (e) {
+            sails.log(e)
+            return res.forbidden()
+        }
+
+        // verify user is in project
+        const { projectId } = req.params;
+
+        let project = await Project.findOne({ id: projectId }).populate('members', { id: user.id });
+        if (!project) return res.notFound();
+
+        if (project.members.length !== 0 || project.owner === user.id) {
+            // collect the following:
+            //  total members
+            //  total bugs
+            //  total bugs open
+            //  total bugs closed
+            let totalBugs = await Bug.count({ project: projectId });
+            let totalBugsOpen = await Bug.count({ project: projectId, status: 'open' });
+            let totalBugsClosed = totalBugs - totalBugsOpen;
+            let { members } = await Project.findOne({ id: projectId }).populate('members');
+
+            return res.json({
+                totalBugs, totalBugsClosed, totalBugsOpen, totalMembers: members.length, success: true
+            })
+        } else {
+            return res.forbidden()
+        }
+    },
+
+    users: async (req, res) => {
+        var user;
+        try {
+            user = await sails.helpers.authentication(req);
+        } catch (e) {
+            sails.log(e)
+            return res.forbidden()
+        }
+
+        const { projectId } = req.params;
+        let { search, skip, limit } = req.query;
+        let subCriteria = {};
+
+        if (search) {
+            subCriteria.where = {
+                or: [
+                    {
+                        email: { contains: search },
+                    },
+                    {
+                        name: { contains: search },
+                    },
+                ]
+            }
+        }
+
+        subCriteria.select = ['name', 'email'];
+
+        let project = await Project.findOne({
+            id: projectId
+        }).populate('members', subCriteria).populate('owner').meta({
+            makeLikeModifierCaseInsensitive: true
+        });;
+
+        if (!project) return res.notFound();
+
+        let members;
+
+        if (search) {
+            if (project.owner.name.toLowerCase().includes(search.toLowerCase()) || project.owner.email.toLowerCase().includes(search.toLowerCase())) {
+                members = [project.owner, ...project.members]
+            } else {
+                members = project.members
+            }
+
+        } else {
+            members = [project.owner, ...project.members]
+        }
+
+        let newMembers = []
+        skip = Math.min(Math.abs(skip), members.length)
+        stopAt = Math.min(Math.abs(limit) + skip, members.length);
+
+
+
+        for (let i = skip; i < stopAt; i++) {
+            newMembers.push(members[i])
+        }
+
+
+        return res.json({
+            members: newMembers,
+            total: members.length
+        })
+
     }
 
 };
