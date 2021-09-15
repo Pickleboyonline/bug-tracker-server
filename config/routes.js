@@ -56,6 +56,7 @@ module.exports.routes = {
 
   'POST /bug/create': 'BugController.create',
   'GET /bug/all': 'BugController.all',
+  'GET /bug/:bugId': 'BugController.getOne',
   'PUT /bug/:bugId': 'BugController.update',
   'GET /bug/assignee': 'BugController.searchAssignees',
   'POST /bug/assignee': 'BugController.addAssignee',

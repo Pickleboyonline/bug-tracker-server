@@ -54,7 +54,7 @@ module.exports = {
             }
 
         } catch (e) {
-            return res.notFound()
+            return res.serverError(e)
         }
 
         let submitter = user.id;
@@ -96,12 +96,13 @@ module.exports = {
         }
 
         // send out notification
-        let { members } = await Project.findOne({ id: projectId }).populate('members')
-        let membersIds = members.map(doc => doc.id)
+        let project = await Project.findOne({ id: projectId }).populate('members')
+        let membersIds = project.members.map(doc => doc.id)
+        membersIds.push(project.owner)
         for (let i = 0; i < membersIds.length; i++) {
             if (membersIds[i] === user.id) continue;
             await Notification.createAndSendNotification({
-                recipient: membersIds,
+                recipient: membersIds[i],
                 title: 'New Bug',
                 description: user.name + ' has submitted a new bug.',
                 type: 'NEW_BUG',
@@ -200,7 +201,7 @@ module.exports = {
             }
 
         } catch (e) {
-            return res.notFound()
+            return res.serverError(e)
         }
 
         await Bug.removeFromCollection(bugId, 'assignedTo', userId);
@@ -248,7 +249,7 @@ module.exports = {
             }
 
         } catch (e) {
-            return res.notFound()
+            return res.serverError(e)
         }
 
 
@@ -286,7 +287,7 @@ module.exports = {
             }
 
         } catch (e) {
-            return res.notFound()
+            return res.serverError(e)
         }
 
 
@@ -356,6 +357,45 @@ module.exports = {
 
     },
 
+    // GET /bug/:bugId
+    getOne: async (req, res) => {
+        var user;
+        try {
+            user = await sails.helpers.authentication(req);
+        } catch (e) {
+            sails.log(e)
+            return res.forbidden()
+        }
+
+        const { bugId } = req.params;
+        let bug = await Bug.findOne({ id: bugId }).populate('submitter').populate('files');
+
+        if (!bug) return res.notFound()
+
+
+        // Ensure user is authorized
+        try {
+            let isAuthed = await sails.helpers.isAuthed.with({
+                userId: user.id,
+                projectId: bug.project,
+                permission: PERMISSIONS.MODIFY_BUGS
+            });
+            if (!isAuthed) {
+                // sails.log("FORBIDDEn")
+                res.status(403);
+                return res.send("Forbidden: you do not have the necessary permissions")
+            }
+
+        } catch (e) {
+            return res.serverError(e)
+        }
+
+        return res.json({
+            bug
+        })
+
+    },
+
     // updates bug given ID
     // input:
     //  description, tags, dueDta, severity, reporducibility, catagory
@@ -402,7 +442,7 @@ module.exports = {
             }
 
         } catch (e) {
-            return res.notFound()
+            return res.serverError(e)
         }
 
 

@@ -41,7 +41,7 @@ module.exports = {
             }
 
         } catch (e) {
-            return res.notFound()
+            return res.serverError(e)
         }
 
 
@@ -56,12 +56,14 @@ module.exports = {
         }).fetch();
 
         // send out notifications
-        let { members } = await Project.findOne({ id: projectId }).populate('members')
-        let membersIds = members.map(doc => doc.id)
+        let project = await Project.findOne({ id: projectId }).populate('members')
+        let membersIds = project.members.map(doc => doc.id)
+        membersIds.push(project.owner)
+
         for (let i = 0; i < membersIds.length; i++) {
             if (membersIds[i] === user.id) continue;
             await Notification.createAndSendNotification({
-                recipient: membersIds,
+                recipient: membersIds[i],
                 title: 'New Announcement',
                 description: user.name + ' has made an announcement.',
                 type: 'NEW_ANNOUNCEMENT',
@@ -79,6 +81,7 @@ module.exports = {
         })
     },
     get: async (req, res) => {
+
         var user;
         try {
             user = await sails.helpers.authentication(req);
@@ -87,8 +90,49 @@ module.exports = {
             return res.forbidden()
         }
 
-        let { search, sortBy, limit, skip, projectId } = req.query;
+        let { search, sortBy, limit, skip, projectId, announcementId } = req.query;
 
+
+
+
+
+
+
+        // support 1 announcement
+        if (announcementId) {
+            let announcement = await Announcement.findOne({ id: announcementId }).populate('submitter');
+
+            if (announcement) {
+                // Ensure user is authorized (for diff request)
+                try {
+                    let isAuthed = await sails.helpers.isAuthed.with({
+                        userId: user.id,
+                        projectId: announcement.project,
+                        permission: PERMISSIONS.MODIFY_BUGS // default permission
+                    });
+                    if (!isAuthed) {
+                        // sails.log("FORBIDDEn")
+                        res.status(403);
+                        return res.send("Forbidden: you do not have the necessary permissions")
+                    }
+
+                } catch (e) {
+                    return res.serverError(e)
+                }
+
+                let { name, email, id } = announcement.submitter
+                announcement.submitter = {
+                    name, email, id
+                }
+                return res.json({
+                    announcement
+                })
+            } else {
+                return res.notFound
+            }
+        }
+
+        if (!projectId) return res.badRequest();
 
         // Ensure user is authorized
         try {
@@ -104,11 +148,9 @@ module.exports = {
             }
 
         } catch (e) {
-            return res.notFound()
+            return res.serverError(e)
         }
 
-
-        if (!projectId) return res.badRequest("Must provbi")
         let criteria = {};
         let countCriteria = {};
 

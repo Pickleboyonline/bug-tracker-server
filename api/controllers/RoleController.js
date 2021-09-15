@@ -51,7 +51,7 @@ module.exports = {
             }
 
         } catch (e) {
-            return res.notFound()
+            return res.serverError(e)
         }
 
 
@@ -169,7 +169,7 @@ module.exports = {
             }
 
         } catch (e) {
-            return res.notFound()
+            return res.serverError(e)
         }
 
         await Role.destroyOne({ id: roleId })
@@ -234,7 +234,7 @@ module.exports = {
             }
 
         } catch (e) {
-            return res.notFound()
+            return res.serverError(e)
         }
 
         //update permissions and title

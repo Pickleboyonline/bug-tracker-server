@@ -159,19 +159,20 @@ module.exports = {
 
         const { projectId } = req.params;
         const { title, description } = req.body;
-        let isAuthed = false;
+
 
         try {
-            isAuthed = await sails.helpers.isAuthed.with({
+            let isAuthed = await sails.helpers.isAuthed.with({
                 userId: user.id,
                 projectId: projectId,
                 permission: PERMISSIONS.MODIFY_GENERAL
             });
+            if (!isAuthed) return res.forbidden()
         } catch (e) {
-            return res.notFound()
+            return res.serverError(e)
         }
 
-        if (!isAuthed) return res.forbidden()
+
 
 
         let project = await Project.updateOne({ id: projectId }).set({
@@ -271,7 +272,7 @@ module.exports = {
             }
 
         } catch (e) {
-            return res.notFound()
+            return res.serverError(e)
         }
         let project = await Project.findOne({ id: projectId })
 
@@ -317,7 +318,7 @@ module.exports = {
             }
 
         } catch (e) {
-            return res.notFound()
+            return res.serverError(e)
         }
 
 

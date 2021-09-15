@@ -33,7 +33,7 @@ module.exports = {
 
         if (!project) res.badRequest('No project found')
 
-        // if (project.owner !== user.id) return res.forbidden();
+
         // Ensure user is authorized
         try {
             let isAuthed = await sails.helpers.isAuthed.with({
@@ -48,7 +48,7 @@ module.exports = {
             }
 
         } catch (e) {
-            return res.notFound()
+            return res.serverError(e)
         }
 
         req.file('icon').upload({
