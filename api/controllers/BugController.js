@@ -9,8 +9,20 @@
 const { htmlToText } = require('html-to-text');
 
 
+// PERMISSIONS: 
+// MODIFY_BUGS
+
+const PERMISSIONS = {
+    ALL: 'ALL',
+    MODIFY_GENERAL: 'MODIFY_GENERAL',
+    MODIFY_MEMBERS: 'MODIFY_MEMBERS',
+    MODIFY_BUGS: 'MODIFY_BUGS',
+    MODIFY_ANNOUNCEMENTS: 'MODIFY_ANNOUNCEMENTS'
+}
 
 module.exports = {
+
+    // POST /bug/create
     create: async (req, res) => {
         var user;
         try {
@@ -27,6 +39,23 @@ module.exports = {
             severity,
             reproducibility, description, assignees,
             catagory, projectId } = req.body;
+
+        // Ensure user is authorized
+        try {
+            let isAuthed = await sails.helpers.isAuthed.with({
+                userId: user.id,
+                projectId: projectId,
+                permission: PERMISSIONS.MODIFY_BUGS
+            });
+            if (!isAuthed) {
+                // sails.log("FORBIDDEn")
+                res.status(403);
+                return res.send("Forbidden: you do not have the necessary permissions")
+            }
+
+        } catch (e) {
+            return res.notFound()
+        }
 
         let submitter = user.id;
         description = description || ''
@@ -64,7 +93,7 @@ module.exports = {
 
     },
 
-
+    // GET /bug/assignee
     searchAssignees: async (req, res) => {
         var user;
         try {
@@ -111,7 +140,7 @@ module.exports = {
 
     },
 
-
+    // DELETE /bug/assignee
     removeAssignee: async (req, res) => {
         var user;
         try {
@@ -129,6 +158,26 @@ module.exports = {
 
         if (!bugId) return res.badRequest('No bug ID provided');
 
+        let bug = Bug.findOne({ id: bugId });
+        if (!bug) return res.notFound();
+
+        // Ensure user is authorized
+        try {
+            let isAuthed = await sails.helpers.isAuthed.with({
+                userId: user.id,
+                projectId: bug.project,
+                permission: PERMISSIONS.MODIFY_BUGS
+            });
+            if (!isAuthed) {
+                // sails.log("FORBIDDEn")
+                res.status(403);
+                return res.send("Forbidden: you do not have the necessary permissions")
+            }
+
+        } catch (e) {
+            return res.notFound()
+        }
+
         await Bug.removeFromCollection(bugId, 'assignedTo', userId);
 
         // await Bug.updateOne({ id: bugId }).valuesToSet({
@@ -138,7 +187,7 @@ module.exports = {
         return res.json({ message: 'DONE' })
     },
 
-
+    // POST /bug/assignee
     addAssignee: async (req, res) => {
         var user;
         try {
@@ -159,6 +208,25 @@ module.exports = {
 
         if (!bug) return res.badRequest("Bug not found")
 
+
+        // Ensure user is authorized
+        try {
+            let isAuthed = await sails.helpers.isAuthed.with({
+                userId: user.id,
+                projectId: bug.project,
+                permission: PERMISSIONS.MODIFY_BUGS
+            });
+            if (!isAuthed) {
+                // sails.log("FORBIDDEn")
+                res.status(403);
+                return res.send("Forbidden: you do not have the necessary permissions")
+            }
+
+        } catch (e) {
+            return res.notFound()
+        }
+
+
         for (let i = 0; i < userIds.length; i++) {
             await Bug.addToCollection(bugId, 'assignedTo', userIds[i]);
         }
@@ -167,7 +235,7 @@ module.exports = {
         })
     },
 
-
+    // GET /bug/all
     all: async (req, res) => {
         var user;
         try {
@@ -178,6 +246,24 @@ module.exports = {
         }
 
         const { projectId, skip, limit, search, sortBy, order } = req.query;
+
+        // Ensure user is authorized
+        try {
+            let isAuthed = await sails.helpers.isAuthed.with({
+                userId: user.id,
+                projectId,
+                permission: PERMISSIONS.MODIFY_BUGS
+            });
+            if (!isAuthed) {
+                // sails.log("FORBIDDEn")
+                res.status(403);
+                return res.send("Forbidden: you do not have the necessary permissions")
+            }
+
+        } catch (e) {
+            return res.notFound()
+        }
+
 
         if (limit && limit > 100) limit = 100;
 
@@ -250,6 +336,7 @@ module.exports = {
     //  description, tags, dueDta, severity, reporducibility, catagory
     // returns:
     // updated bug
+    // PUT /bug/:bugId
     update: async (req, res) => {
         var user;
         try {
@@ -259,13 +346,43 @@ module.exports = {
             return res.forbidden()
         }
         const { bugId } = req.params;
-        const { description,
-            tags, dueDate,
-            severity, reproducibility,
-            catagory, status } = req.body;
-        let valuesToSet = {};
 
+        const {
+            description,
+            tags,
+            dueDate,
+            severity,
+            reproducibility,
+            catagory,
+            status
+        } = req.body;
+
+        let valuesToSet = {};
         if (!bugId) return res.badRequest('No bug Id provided');
+
+        let bug = await Bug.findOne({ id: bugId });
+        if (!bug) return res.notFound();
+
+        // Ensure user is authorized
+        try {
+            let isAuthed = await sails.helpers.isAuthed.with({
+                userId: user.id,
+                projectId: bug.project,
+                permission: PERMISSIONS.MODIFY_BUGS
+            });
+            if (!isAuthed) {
+                // sails.log("FORBIDDEn")
+                res.status(403);
+                return res.send("Forbidden: you do not have the necessary permissions")
+            }
+
+        } catch (e) {
+            return res.notFound()
+        }
+
+
+
+
 
         if (description) {
             valuesToSet.description = description;

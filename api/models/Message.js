@@ -11,6 +11,10 @@ module.exports = {
     body: {
       type: 'string'
     },
+    read: {
+      type: 'boolean',
+      defaultsTo: false,
+    },
     //  ╔═╗╦═╗╦╔╦╗╦╔╦╗╦╦  ╦╔═╗╔═╗
     //  ╠═╝╠╦╝║║║║║ ║ ║╚╗╔╝║╣ ╚═╗
     //  ╩  ╩╚═╩╩ ╩╩ ╩ ╩ ╚╝ ╚═╝╚═╝
@@ -34,6 +38,6 @@ module.exports = {
       model: 'user'
     }
   },
-
+  getNum: async (opts) => 5
 };
 

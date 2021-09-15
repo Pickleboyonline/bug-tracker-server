@@ -33,6 +33,9 @@ module.exports = {
     theme: {
       type: 'string'
     },
+    iconId: {
+      type: 'string'
+    },
 
     //  ╔═╗╔╦╗╔╗ ╔═╗╔╦╗╔═╗
     //  ║╣ ║║║╠╩╗║╣  ║║╚═╗
@@ -92,7 +95,11 @@ module.exports = {
     },
     notifications: {
       collection: 'notification',
-      via: 'reciepent'
+      via: 'recipient'
+    },
+    icon: {
+      collection: 'usericon',
+      via: 'user'
     }
   },
   schema: true

@@ -38,20 +38,25 @@ module.exports = {
 
     // Verify token
     // let payload;
+    let payload
+    try {
+      payload = await (new Promise((res, rej) => {
+        try {
+          let result = jwt.verify(token, KEY)
+          res(result)
+        } catch (e) {
+          rej(e)
+        }
+      }));
+    } catch (e) {
+      throw new Error('Token invalid')
+    }
 
-
-    let payload = await (new Promise((res, rej) => {
-      try {
-        let result = jwt.verify(token, KEY)
-        res(result)
-      } catch (e) {
-        rej(e)
-      }
-
-    }));
 
     if (payload) {
-      let user = await User.findOne({ email: payload.email });
+      let user = await User.findOne({
+        id: payload.id
+      });
 
       if (!user) throw new Error('user not found');
       if (user.passLastModified > payload.ait) throw new Error('password has been reset')

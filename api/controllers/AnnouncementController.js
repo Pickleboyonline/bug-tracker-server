@@ -4,6 +4,13 @@
  * @description :: Server-side actions for handling incoming requests.
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
+const PERMISSIONS = {
+    ALL: 'ALL',
+    MODIFY_GENERAL: 'MODIFY_GENERAL',
+    MODIFY_MEMBERS: 'MODIFY_MEMBERS',
+    MODIFY_BUGS: 'MODIFY_BUGS',
+    MODIFY_ANNOUNCEMENTS: 'MODIFY_ANNOUNCEMENTS'
+}
 
 
 module.exports = {
@@ -18,6 +25,25 @@ module.exports = {
 
         const { title, projectId, body } = req.body;
         if (!(title && projectId)) return res.badRequest("Must give both title and projectId")
+
+
+        // Ensure user is authorized
+        try {
+            let isAuthed = await sails.helpers.isAuthed.with({
+                userId: user.id,
+                projectId: projectId,
+                permission: PERMISSIONS.MODIFY_ANNOUNCEMENTS
+            });
+            if (!isAuthed) {
+                // sails.log("FORBIDDEn")
+                res.status(403);
+                return res.send("Forbidden: you do not have the necessary permissions")
+            }
+
+        } catch (e) {
+            return res.notFound()
+        }
+
 
         let announcement = await Announcement.create({
             title,
@@ -44,6 +70,26 @@ module.exports = {
         }
 
         let { search, sortBy, limit, skip, projectId } = req.query;
+
+
+        // Ensure user is authorized
+        try {
+            let isAuthed = await sails.helpers.isAuthed.with({
+                userId: user.id,
+                projectId,
+                permission: PERMISSIONS.MODIFY_BUGS // default permission
+            });
+            if (!isAuthed) {
+                // sails.log("FORBIDDEn")
+                res.status(403);
+                return res.send("Forbidden: you do not have the necessary permissions")
+            }
+
+        } catch (e) {
+            return res.notFound()
+        }
+
+
         if (!projectId) return res.badRequest("Must provbi")
         let criteria = {};
         let countCriteria = {};

@@ -35,7 +35,13 @@ module.exports.routes = {
   'POST /user/signup': 'UserController.signup',
   'POST /user/login': 'UserController.login',
   'GET /user/search': 'UserController.search',
-
+  'GET /user/me': 'UserController.me',
+  'PUT /user/update': 'UserController.update',
+  'PATCH /user/password': 'UserController.updatePassword',
+  'PUT /user/password': 'UserController.updatePassword',
+  'POST /user/icon': 'UploadedImageController.uploadUserIcon',
+  'GET /user/icon/:id': 'UploadedImageController.getUserIcon',
+  // 'GET /throw-error': 'UserController.throwError',
 
   'POST /project/join': 'ProjectController.join',
   'POST /project/create': 'ProjectController.create',
@@ -44,6 +50,7 @@ module.exports.routes = {
   'GET /project/users/:projectId': 'ProjectController.users',
   'PUT /project/:projectId': 'ProjectController.update',
   'DELETE /project/member': 'ProjectController.removeUser',
+  'DELETE /project/:projectId': 'ProjectController.deleteProject',
   'POST /project/member': 'ProjectController.inviteUser',
   'GET /project/stats/:projectId': 'ProjectController.getStats',
 
@@ -82,5 +89,11 @@ module.exports.routes = {
   'POST /message/:userId': 'MessageController.sendMessage',
   'GET /conversation/all': 'MessageController.getConversation',
   'GET /conversation/:conversationId': 'MessageController.getMessages',
+  'POST /message/subscribe': 'MessageController.subscribe',
   // 'DELETE /conversation/:conversationId': 'MessageController.sendMessage',
+
+  'GET /notification/all': 'NotificationController.getAll',
+  'DELETE /notification/:notificationId': 'NotificationController.deleteOne',
+  'DELETE /notification/all': 'NotificationController.deleteAll',
+  'POST /notification/subscribe': 'MessageController.subscribe',
 };

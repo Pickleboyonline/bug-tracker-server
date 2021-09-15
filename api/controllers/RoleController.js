@@ -36,6 +36,25 @@ module.exports = {
 
         if (color === '') color = undefined;
 
+
+        // Validate permissions
+        try {
+            let isAuthed = await sails.helpers.isAuthed.with({
+                userId: user.id,
+                projectId: projectId,
+                permission: PERMISSIONS.MODIFY_GENERAL
+            });
+            if (!isAuthed) {
+                // sails.log("FORBIDDEn")
+                res.status(403);
+                return res.send("Forbidden: you do not have the necessary permissions")
+            }
+
+        } catch (e) {
+            return res.notFound()
+        }
+
+
         // Validate permissions
         let permissionsArray = permissions.split(',');
 
@@ -132,16 +151,38 @@ module.exports = {
 
         const { roleId } = req.params;
 
-
-        let role = await Role.destroyOne({ id: roleId })
-
+        let role = await Role.findOne({ id: roleId })
         if (!role) return res.notFound("Role does not exist")
+
+
+        // Ensure user is authorized
+        try {
+            let isAuthed = await sails.helpers.isAuthed.with({
+                userId: user.id,
+                projectId: role.project,
+                permission: PERMISSIONS.MODIFY_GENERAL
+            });
+            if (!isAuthed) {
+                // sails.log("FORBIDDEn")
+                res.status(403);
+                return res.send("Forbidden: you do not have the necessary permissions")
+            }
+
+        } catch (e) {
+            return res.notFound()
+        }
+
+        await Role.destroyOne({ id: roleId })
+
+
 
         return res.json({
             message: 'Role was removed',
             role
         })
     },
+
+
     update: async (req, res) => {
         var user;
         try {
@@ -178,6 +219,24 @@ module.exports = {
         if (color === '') {
             color = undefined
         }
+
+        // Ensure user is authorized
+        try {
+            let isAuthed = await sails.helpers.isAuthed.with({
+                userId: user.id,
+                projectId: existingRole.project,
+                permission: PERMISSIONS.MODIFY_GENERAL
+            });
+            if (!isAuthed) {
+                // sails.log("FORBIDDEn")
+                res.status(403);
+                return res.send("Forbidden: you do not have the necessary permissions")
+            }
+
+        } catch (e) {
+            return res.notFound()
+        }
+
         //update permissions and title
         await Role.updateOne({ id: existingRole.id }).set({
             permissions, title, color

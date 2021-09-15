@@ -44,7 +44,7 @@ module.exports = {
     },
     project: {
       model: 'project',
-      required: true
+      // required: true
     },
     comments: {
       collection: 'comment',
