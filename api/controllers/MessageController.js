@@ -5,10 +5,6 @@
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
 
-const Conversation = require("../models/Conversation");
-const Message = require("../models/Message");
-
-
 
 module.exports = {
     // POST /messsage/:userId
@@ -60,7 +56,6 @@ module.exports = {
         messageToSend.sender = { ...messageToSend.sender };
         messageToSend.sender.isYou = false
 
-        // sails.log("MESSAGE SENT to " + userId);
 
         sails.sockets.broadcast(userId, "new-message", messageToSend);
 
@@ -80,13 +75,18 @@ module.exports = {
         message.conversation.recipient = reciepent
 
 
-        // TODO: maintain unread notiofications
-        // let messageIds = messages.map(doc => doc.id);
-        // if (messageIds.length > 0) {
-        //     await Message.update({id: {in: messageIds}}).set({read: true});
-        //     let totalUnreadMessages = await Message.count({conversation: conversation.id, read: false});
-        //     await Conversation.updateOne({id: conversation.id}).set({unreadMessages: totalUnreadMessages});
-        // }
+        //  maintain unread notiofications
+
+        Notification.createAndSendNotification({
+            recipient: userId,
+            type: 'NEW_MESSAGE',
+            title: 'New Message',
+            description: user.name + ' has sent you a message!',
+            extra: convo.id,
+            payload: {
+                conversationId: convo.id
+            }
+        })
 
         // sails.sockets.blast('new-message', message)
         return res.json({
@@ -124,7 +124,23 @@ module.exports = {
 
             conversations[i].reciepent = reciepent
             conversations[i].recipient = reciepent
+
+            // add newMessages => 
+            let notifications = await Notification.find({
+                read: false,
+                extra: conversations[i].id,
+                recipient: user.id
+            });
+
+            let conversationIdsWithUnreadMessages = notifications.map(doc => doc.extra);
+            if (conversationIdsWithUnreadMessages.includes(conversations[i].id)) {
+                conversations[i].newMessages = true;
+            } else {
+                conversations[i].newMessages = false;
+            }
         }
+
+
 
         return res.json({
             conversations
@@ -140,7 +156,9 @@ module.exports = {
             sails.log(e)
             return res.forbidden()
         }
-        let conversationId = req.query.conversationId || req.params.conversationId;
+        let conversationId = req.params.conversationId;
+        if (!conversationId) return res.badRequest();
+
         let limit = req.query.limit || 50;
         let skip = req.query.skip || 0;
 
@@ -192,17 +210,38 @@ module.exports = {
 
         }
 
-        // TODO: maintain unread notifications
-        // let messageIds = messages.map(doc => doc.id);
-        // if (messageIds.length > 0) {
-        //     await Message.update({id: {in: messageIds}}).set({read: true});
-        //     let totalUnreadMessages = await Message.count({conversation: conversation.id, read: false});
-        //     await Conversation.updateOne({id: conversation.id}).set({unreadMessages: totalUnreadMessages});
-        // }
+        // read notifications
+        await Notification.update({
+            extra: conversationId,
+            recipient: user.id
+        }).set({ read: true })
 
         return res.json({
             messages,
             total
+        })
+    },
+
+    // PATCH /message/read/:conversationId
+    readMessages: async (req, res) => {
+        var user;
+        try {
+            user = await sails.helpers.authentication(req);
+        } catch (e) {
+            sails.log(e)
+            return res.forbidden()
+        }
+
+        const { conversationId } = req.params;
+
+        // read notifications
+        await Notification.update({
+            extra: conversationId,
+            recipient: user.id
+        }).set({ read: true })
+
+        return res.json({
+            success: true
         })
     },
 

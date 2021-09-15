@@ -18,6 +18,7 @@ module.exports = {
     // link: { type: 'string' },
     payload: { type: 'json' },
     read: { type: 'boolean', defaultsTo: false },
+    extra: { type: 'string' },
     //  ╔═╗╔╦╗╔╗ ╔═╗╔╦╗╔═╗
     //  ║╣ ║║║╠╩╗║╣  ║║╚═╗
     //  ╚═╝╩ ╩╚═╝╚═╝═╩╝╚═╝
@@ -31,7 +32,9 @@ module.exports = {
     }
   },
   createAndSendNotification: async (opts) => {
+
     let notification = await Notification.create(opts).fetch();
+    // sails.log(notification)
 
     sails.sockets.broadcast(opts.recipient, "new-notification", notification);
 

@@ -79,13 +79,38 @@ module.exports = {
             assignees = assignees.split(',');
             //sails.log(assignees)
             for (let i = 0; i < assignees.length; i++) {
-                await Bug.addToCollection(bug.id, 'assignedTo', assignees[i])
+                await Bug.addToCollection(bug.id, 'assignedTo', assignees[i]);
 
+                if (assignees[i] === user.id) continue;
+                await Notification.createAndSendNotification({
+                    recipient: assignees[i],
+                    title: 'Assigned to Bug',
+                    description: user.name + ` has assigned you to bug "${bug.title}"`,
+                    type: 'NEW_BUG',
+                    payload: {
+                        projectId: projectId,
+                        bugId: bug.id
+                    }
+                })
             }
         }
-        // await Bug.updateOne({ id: bugId }).valuesToSet({
-        //     totalAssignees: bug.totalAssignees + assignees.length
-        // })
+
+        // send out notification
+        let { members } = await Project.findOne({ id: projectId }).populate('members')
+        let membersIds = members.map(doc => doc.id)
+        for (let i = 0; i < membersIds.length; i++) {
+            if (membersIds[i] === user.id) continue;
+            await Notification.createAndSendNotification({
+                recipient: membersIds,
+                title: 'New Bug',
+                description: user.name + ' has submitted a new bug.',
+                type: 'NEW_BUG',
+                payload: {
+                    projectId: projectId,
+                    bugId: bug.id
+                }
+            })
+        }
 
 
         return res.json(bug)

@@ -53,7 +53,25 @@ module.exports = {
             submitterName: user.name,
             submitterEmail: user.email,
             plainTextBody: ('' + body).replace(/<[^>]+>/g, '').replace(/(\r\n|\n|\r)/gm, "")
-        })
+        }).fetch();
+
+        // send out notifications
+        let { members } = await Project.findOne({ id: projectId }).populate('members')
+        let membersIds = members.map(doc => doc.id)
+        for (let i = 0; i < membersIds.length; i++) {
+            if (membersIds[i] === user.id) continue;
+            await Notification.createAndSendNotification({
+                recipient: membersIds,
+                title: 'New Announcement',
+                description: user.name + ' has made an announcement.',
+                type: 'NEW_ANNOUNCEMENT',
+                payload: {
+                    projectId: projectId,
+                    announcementId: announcement.id
+                }
+            })
+        }
+
 
         return res.json({
             message: 'Announcement was created',

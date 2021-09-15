@@ -125,7 +125,7 @@ module.exports = {
             project: projectId,
         });
 
-        if (!project) res.notFound();
+        if (!project) return res.notFound();
 
         let permissions = []
         if (user.id === project.owner) {

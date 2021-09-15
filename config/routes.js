@@ -90,7 +90,7 @@ module.exports.routes = {
   'GET /conversation/all': 'MessageController.getConversation',
   'GET /conversation/:conversationId': 'MessageController.getMessages',
   'POST /message/subscribe': 'MessageController.subscribe',
-  // 'DELETE /conversation/:conversationId': 'MessageController.sendMessage',
+  'PATCH /message/read/:conversationId': 'MessageController.readMessages',
 
   'GET /notification/all': 'NotificationController.getAll',
   'DELETE /notification/:notificationId': 'NotificationController.deleteOne',
