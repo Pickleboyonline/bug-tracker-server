@@ -50,6 +50,7 @@ module.exports.routes = {
   'GET /project/users/:projectId': 'ProjectController.users',
   'PUT /project/:projectId': 'ProjectController.update',
   'DELETE /project/member': 'ProjectController.removeUser',
+  'DELETE /project/member/me': 'ProjectController.removeMe',
   'DELETE /project/:projectId': 'ProjectController.deleteProject',
   'POST /project/member': 'ProjectController.inviteUser',
   'GET /project/stats/:projectId': 'ProjectController.getStats',
@@ -61,6 +62,8 @@ module.exports.routes = {
   'GET /bug/assignee': 'BugController.searchAssignees',
   'POST /bug/assignee': 'BugController.addAssignee',
   'DELETE /bug/assignee': 'BugController.removeAssignee',
+  'DELETE /bug/:bugId': 'BugController.deleteOne',
+
 
   'POST /icon/upload': 'UploadedImageController.upload',
   'GET /icon/:id': 'UploadedImageController.get',
@@ -91,6 +94,7 @@ module.exports.routes = {
   'GET /conversation/all': 'MessageController.getConversation',
   'GET /conversation/:conversationId': 'MessageController.getMessages',
   'POST /message/subscribe': 'MessageController.subscribe',
+  'POST /message/unsubscribe': 'MessageController.unsubscribe',
   'PATCH /message/read/:conversationId': 'MessageController.readMessages',
 
   'GET /notification/all': 'NotificationController.getAll',

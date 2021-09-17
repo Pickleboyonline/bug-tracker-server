@@ -5,9 +5,6 @@
  * @help        :: See https://sailsjs.com/docs/concepts/actions
  */
 
-// const Bug = require("../models/Bug");
-const { htmlToText } = require('html-to-text');
-
 
 // PERMISSIONS: 
 // MODIFY_BUGS
@@ -271,7 +268,15 @@ module.exports = {
             return res.forbidden()
         }
 
-        const { projectId, skip, limit, search, sortBy, order } = req.query;
+        const {
+            projectId,
+            skip,
+            limit,
+            search,
+            sortBy,
+            order,
+            status,
+        } = req.query;
 
         // Ensure user is authorized
         try {
@@ -310,11 +315,13 @@ module.exports = {
                 or: [
                     {
                         title: { contains: search },
-                        project: projectId
+                        project: projectId,
+                        ...(status ? { status } : {})
                     },
                     {
                         plainTextDescription: { contains: search },
-                        project: projectId
+                        project: projectId,
+                        ...(status ? { status } : {})
                     },
                 ]
             }
@@ -392,6 +399,49 @@ module.exports = {
 
         return res.json({
             bug
+        })
+
+    },
+
+    // DELETE /bug/:bugId
+    deleteOne: async (req, res) => {
+        var user;
+        try {
+            user = await sails.helpers.authentication(req);
+        } catch (e) {
+            sails.log(e)
+            return res.forbidden()
+        }
+
+        const { bugId } = req.params;
+        let bug = await Bug.findOne({ id: bugId }).populate('submitter').populate('files');
+
+        if (!bug) return res.notFound()
+
+
+        // Ensure user is authorized
+        try {
+            let isAuthed = await sails.helpers.isAuthed.with({
+                userId: user.id,
+                projectId: bug.project,
+                permission: PERMISSIONS.MODIFY_BUGS
+            });
+            if (!isAuthed) {
+                // sails.log("FORBIDDEn")
+                res.status(403);
+                return res.send("Forbidden: you do not have the necessary permissions")
+            }
+        } catch (e) {
+            return res.serverError(e)
+        }
+
+
+        await Bug.destroyOne({ id: bug.id });
+
+        return res.json({
+            bug,
+            success: true,
+            message: 'bug was deleted'
         })
 
     },

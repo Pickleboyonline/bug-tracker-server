@@ -170,14 +170,14 @@ module.exports = {
             sails.log(e)
             return res.forbidden()
         }
-        let { query } = req.query;
+        let { query, projectId, isIn } = req.query;
 
         if (!query) return res.json({ results: [] });
 
         query = '' + query;
         // sails.log(query);
 
-        let users = await User.find({
+        let criteria = {
             where: {
                 or:
                     [
@@ -188,19 +188,62 @@ module.exports = {
             limit: 10,
             sort: 'name ASC',
             select: ['name', 'email']
-        }).meta({
-            makeLikeModifierCaseInsensitive: true
-        });
+        };
 
-        // // remove sensitive data
-        // let cleanedUsers = users.map((doc) => {
-        //     return {
-        //         email: doc.email,
-        //         id: doc.id,
-        //         name: doc.name,
-        //     }
-        // })
-        return res.json({ results: users })
+        let metaData = {
+            makeLikeModifierCaseInsensitive: true
+        }
+
+
+        // fetch users until none left or length of 10 is reached
+        let usersToReturn = [];
+        let lastUserFetchCount = 10;
+        let skip = 0;
+        if (projectId) {
+            if (isIn === 'true') {
+                isIn = true
+            } else {
+                isIn = false
+            }
+
+            while (usersToReturn.length !== 10 && lastUserFetchCount !== 0) {
+                let users = await User.find({ ...criteria, skip }).populate('projectsOwned').populate('projectsJoined').meta(metaData);
+
+
+                for (let i = 0; i < users.length; i++) {
+                    let currentUser = users[i];
+
+                    currentUser.projectsJoined = currentUser.projectsJoined.map(doc => doc.id);
+                    currentUser.projectsOwned = currentUser.projectsOwned.map(doc => doc.id);
+                    currentUser.projects = [...currentUser.projectsJoined, ...currentUser.projectsOwned];
+
+                    const { name, email, id } = currentUser;
+
+
+                    if (isIn) {
+                        if (currentUser.projects.includes(projectId)) {
+                            usersToReturn.push({ name, email, id })
+                        }
+                    } else {
+                        if (!currentUser.projects.includes(projectId)) {
+                            usersToReturn.push({ name, email, id });
+                        }
+                    }
+                }
+
+                skip += users.length;
+                lastUserFetchCount = users.length;
+            }
+
+            return res.json({
+                results: usersToReturn
+            })
+        }
+
+
+        let usersDefault = await User.find(criteria).meta(metaData);
+
+        return res.json({ results: usersDefault })
     }
 
 };

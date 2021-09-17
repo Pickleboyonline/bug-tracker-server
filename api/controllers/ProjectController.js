@@ -72,7 +72,8 @@ module.exports = {
 
         let project = await Project.create({ title, description, owner: user.id }).fetch();
 
-        // TODO: send invite instead of force invite
+
+        // send invite
         for (let i = 0; i < members.length; i++) {
 
             if (members[i] === user.id) {
@@ -282,6 +283,51 @@ module.exports = {
 
         await Role.removeFromCollection(roles.map((item) => item.id), 'users', userId)
         await Project.removeFromCollection(projectId, 'members', userId);
+
+        return res.json({
+            success: true
+        })
+    },
+
+    // DELETE /project/member/me
+    removeMe: async (req, res) => {
+        var user;
+        try {
+            user = await sails.helpers.authentication(req);
+        } catch (e) {
+            sails.log(e)
+            return res.forbidden()
+        }
+
+        const projectId = req.query.projectId || req.body.projectId;
+
+        if (!projectId) return res.badRequest()
+
+        let project = await Project.findOne({ id: projectId })
+
+        if (!project) return res.notFound();
+
+        if (project.owner === user.id) {
+
+            return res.serverError(new Error("Owner cannot leave project"))
+        }
+        // remove user from:
+        //  - assignedTo
+        //  - roles
+        //  - members of project
+
+        await Project.removeFromCollection(projectId, 'members', user.id);
+        let roles = await Role.find({ project: projectId });
+        let bugs = await Bug.find({ project: projectId })
+        let bugIds = bugs.map(doc => doc.id);
+        let roleIds = roles.map(doc => doc.id);
+
+        for (let i = 0; i < roleIds.length; i++) {
+            await Role.removeFromCollection(roleIds[i], 'users', user.id);
+        }
+        for (let i = 0; i < bugIds.length; i++) {
+            await Bug.removeFromCollection(bugIds[i], 'assignedTo', user.id);
+        }
 
         return res.json({
             success: true

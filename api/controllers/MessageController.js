@@ -251,7 +251,7 @@ module.exports = {
         if (!req.isSocket) {
             return res.badRequest('Must be socket request');
         }
-
+        // sails.log(req.headers)
         var user;
         try {
             user = await sails.helpers.authentication(req);
@@ -265,6 +265,29 @@ module.exports = {
         return res.json({
             success: true,
             message: "You are now subscribed to messages"
+        })
+    },
+
+    // POST /message/unsubscribe
+    unsubscribe: async (req, res) => {
+        // sails.log('request!')
+        if (!req.isSocket) {
+            return res.badRequest('Must be socket request');
+        }
+        // sails.log(req.headers)
+        var user;
+        try {
+            user = await sails.helpers.authentication(req);
+        } catch (e) {
+            sails.log(e)
+            return res.forbidden()
+        }
+
+        sails.sockets.leave(req.socket, user.id)
+
+        return res.json({
+            success: true,
+            message: "You are now unsubscribed to messages"
         })
     }
 

@@ -12,7 +12,7 @@ const PERMISSIONS = {
     MODIFY_BUGS: 'MODIFY_BUGS',
     MODIFY_ANNOUNCEMENTS: 'MODIFY_ANNOUNCEMENTS'
 }
-
+const fs = require('fs')
 
 
 module.exports = {
@@ -62,9 +62,20 @@ module.exports = {
                 return res.badRequest('No file was uploaded')
             }
 
-            // remove prev icon
+
             let prevIcons = project.icon;
             for (let i = 0; i < prevIcons.length; i++) {
+                try {
+                    await new Promise((res, rej) => fs.unlink(prevIcons[i].location, (err) => {
+                        if (err) {
+                            rej(err)
+                        } else {
+                            res()
+                        }
+                    }))
+                } catch (e) {
+                    sails.log(e)
+                }
                 await Project.removeFromCollection(projectId, 'icon', prevIcons[i].id);
                 await UploadedImage.destroyOne({ id: prevIcons[i].id })
             }
@@ -78,7 +89,7 @@ module.exports = {
             await Project.addToCollection(projectId, 'icon', icon.id)
 
             uploadedFiles[0].id = icon.id;
-
+            delete uploadedFiles[0].fd;
             return res.json({ uploadedFiles })
         })
     },
@@ -124,6 +135,25 @@ module.exports = {
                 return res.badRequest('No file was uploaded')
             }
 
+
+            // delete old icon on file system
+            if (user.iconId) {
+                let prevIcon = await UserIcon.findOne({ id: user.iconId });
+                if (prevIcon) {
+                    try {
+                        await new Promise((res, rej) => fs.unlink(prevIcon.location, (err) => {
+                            if (err) {
+                                rej(err)
+                            } else {
+                                res()
+                            }
+                        }))
+                    } catch (e) {
+                        sails.log(e)
+                    }
+                }
+            }
+
             await UserIcon.destroy({ user: user.id });
 
             let icon = await UserIcon.create({
@@ -135,6 +165,8 @@ module.exports = {
             await User.updateOne({ id: user.id }).set({ iconId: icon.id })
 
             uploadedFiles[0].id = icon.id;
+
+            delete uploadedFiles[0].fd;
 
             return res.json({ uploadedFiles })
         })
