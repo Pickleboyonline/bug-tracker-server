@@ -50,8 +50,7 @@ module.exports.http = {
 
     reactRouter: async (req, res, next) => {
       if (req.method !== 'GET') return next();
-      let reqURL = new URL(req.url);
-      let pathName = reqURL.pathname;
+      let pathName = req.path;
       let match1 = route('/dashboard');
       let match2 = route('/dashboard/*');
       let match3 = route('/auth')
