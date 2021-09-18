@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
-// const User = require('../models/User');
-const KEY = 'fbdahjsbf@%&@#!disa213g129b12fdas';
+// SPECIFY A KEY IN ENV, or default (INSECURE, PUBLIC!) key will be used
+const KEY = process.env.KEY || 'fbdahjsbf@%&@#!disa213g129b12fdas';
+
 
 module.exports = {
 

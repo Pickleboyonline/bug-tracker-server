@@ -6,7 +6,9 @@
  */
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const KEY = 'fbdahjsbf@%&@#!disa213g129b12fdas';
+const process = require('process');
+// SPECIFY A KEY IN ENV, or default (INSECURE, PUBLIC!) key will be used
+const KEY = process.env.KEY || 'fbdahjsbf@%&@#!disa213g129b12fdas';
 
 module.exports = {
     // inputs: password, email
