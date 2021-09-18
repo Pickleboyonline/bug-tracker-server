@@ -28,8 +28,8 @@ module.exports.sockets = {
   ***************************************************************************/
 
   transports: ['websocket'],
-  //onlyAllowOrigins: ['http://localhost:3000', 'http://192.168.0.167:3000']
-
+  // onlyAllowOrigins: ['http://localhost:3000', 'http://192.168.0.167:3000', 'https://bugg.imranbey.com']
+  onlyAllowOrigins: ['https://bugg.imranbey.com']
   /***************************************************************************
   *                                                                          *
   * `beforeConnect`                                                          *

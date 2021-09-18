@@ -12,6 +12,7 @@
     "grunt": "1.0.4",
     "html-to-text": "^8.0.0",
     "jsonwebtoken": "^8.5.1",
+    "path-match": "^1.2.4",
     "sails": "^1.4.4",
     "sails-hook-grunt": "^4.0.0",
     "sails-hook-orm": "^3.0.2",

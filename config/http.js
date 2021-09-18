@@ -8,9 +8,15 @@
  * For more information on configuration, check out:
  * https://sailsjs.com/config/http
  */
-
+// const parse = require('url').parse;
+const path = require('path');
+const route = require('path-match')({
+  sensitive: false,
+  strict: false,
+  end: false,
+})
 module.exports.http = {
-
+  trustProxy: true,
   /****************************************************************************
   *                                                                           *
   * Sails/Express middleware to run for every HTTP request.                   *
@@ -29,17 +35,35 @@ module.exports.http = {
     *                                                                          *
     ***************************************************************************/
 
-    // order: [
-    //   'cookieParser',
-    //   'session',
-    //   'bodyParser',
-    //   'compress',
-    //   'poweredBy',
-    //   'router',
-    //   'www',
-    //   'favicon',
-    // ],
+    order: [
+      'cookieParser',
+      'session',
+      'bodyParser',
+      'compress',
+      'poweredBy',
+      'reactRouter',
+      'router',
+      'www',
+      'favicon',
+    ],
 
+
+    reactRouter: async (req, res, next) => {
+      if (req.method !== 'GET') return next();
+      let reqURL = new URL(req.url);
+      let pathName = reqURL.pathname;
+      let match1 = route('/dashboard');
+      let match2 = route('/dashboard/*');
+      let match3 = route('/auth')
+
+
+      if (match1(pathName) || match2(pathName) || match3(pathName)) {
+        return res.sendFile(path.join(__dirname, '..', 'assets', 'index.html'));
+      }
+
+      return next()
+
+    }
 
     /***************************************************************************
     *                                                                          *
