@@ -6,7 +6,6 @@
  */
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-// const User = require('../models/User');
 const KEY = 'fbdahjsbf@%&@#!disa213g129b12fdas';
 
 module.exports = {
@@ -36,6 +35,35 @@ module.exports = {
         } else {
             return res.badRequest(new Error('Incorrect password'))
         }
+    },
+
+
+    demo: async (req, res) => {
+        let demo = await User.findOne({ isDemo: true });
+        if (!demo) {
+            demo = await User.create({
+                name: 'Demo',
+                password: 'password',
+                email: 'demo@imranbey.com',
+                passLastModified: (new Date()).getTime(),
+                isDemo: true
+            }).fetch();
+        }
+
+        // gen password + token
+        var token = await (new Promise((res) => {
+            let result = jwt.sign({
+                id: demo.id,
+                iat: (new Date()).getTime()
+            }, KEY);
+            res(result);
+        }));
+
+        return res.json({
+            success: true,
+            token
+        })
+
     },
 
     me: async (req, res) => {

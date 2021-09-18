@@ -33,6 +33,7 @@ module.exports.routes = {
   *                                                                          *
   ***************************************************************************/
   'POST /user/signup': 'UserController.signup',
+  'POST /user/demo': 'UserController.demo',
   'POST /user/login': 'UserController.login',
   'GET /user/search': 'UserController.search',
   'GET /user/me': 'UserController.me',

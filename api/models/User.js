@@ -36,6 +36,10 @@ module.exports = {
     iconId: {
       type: 'string'
     },
+    isDemo: {
+      type: 'boolean',
+      defaultsTo: false
+    },
 
     //  ╔═╗╔╦╗╔╗ ╔═╗╔╦╗╔═╗
     //  ║╣ ║║║╠╩╗║╣  ║║╚═╗
