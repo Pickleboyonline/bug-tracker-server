@@ -2,6 +2,8 @@
 
 a [Sails v1](https://sailsjs.com) application
 
+Back end for [bug-tracker](https://github.com/Pickleboyonline/bug-tracker)
+
 
 ### Links
 
