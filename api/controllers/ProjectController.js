@@ -374,13 +374,13 @@ module.exports = {
             // sails.log(userEmails[i])
             if (userEmails[i] === '') continue;
 
-            let user = await User.findOne({
+            let tempUser = await User.findOne({
                 email: userEmails[i]
             });
 
-            if (user) {
+            if (tempUser) {
                 // TODO: instead of auto add, send notification !
-                if (user.id === project.owner) continue;
+                if (tempUser.id === project.owner) continue;
 
                 await Notification.createAndSendNotification({
                     title: 'Project Invitation',
@@ -389,7 +389,7 @@ module.exports = {
                     payload: {
                         projectId: project.id
                     },
-                    recipient: user.id
+                    recipient: tempUser.id
                 });
 
                 // await Project.addToCollection(projectId, 'members', user.id);
