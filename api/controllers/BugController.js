@@ -17,6 +17,13 @@ const PERMISSIONS = {
     MODIFY_ANNOUNCEMENTS: 'MODIFY_ANNOUNCEMENTS'
 }
 
+
+const createDOMPurify = require('dompurify');
+const { JSDOM } = require('jsdom');
+
+const window = new JSDOM('').window;
+const DOMPurify = createDOMPurify(window);
+
 module.exports = {
 
     // POST /bug/create
@@ -57,6 +64,8 @@ module.exports = {
         let submitter = user.id;
         description = description || ''
 
+        const cleanDescription = DOMPurify.sanitize(description);
+
         let bug = await Bug.create({
             submitter,
             title,
@@ -66,8 +75,8 @@ module.exports = {
             reproducibility,
             catagory,
             submitter: user.id,
-            description,
-            plainTextDescription: description.replace(/<[^>]+>/g, '').replace(/(\r\n|\n|\r)/gm, ""),
+            description: cleanDescription,
+            plainTextDescription: cleanDescription.replace(/<[^>]+>/g, '').replace(/(\r\n|\n|\r)/gm, ""),
             project: projectId
         }).fetch();
 
